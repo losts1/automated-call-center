@@ -1,0 +1,10 @@
+keys:
+  devkey: secretkey
+signing:
+  secret: callcenter-secret
+rtc:
+  tcp_port: 7880
+  udp_port: 7881
+redis:
+  host: livekit-redis
+  port: 6379
