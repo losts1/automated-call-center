@@ -22,7 +22,7 @@ logger.setLevel(logging.INFO)
 
 # ─── Settings ─────────────────────────────────────────────────────────────────
 class Settings(BaseSettings):
-    TWILIO_PHONE_NUMBER: str = "+1XXXXXXXXXX"
+    TWILIO_PHONE_NUMBER: str = "+1-555-555-5555"
     TWILIO_WEBHOOK_URL: str = "https://your-domain.com/webhooks/twilio"
     TWILIO_STATUS_URL: str = "https://your-domain.com/webhooks/status"
     LIVEKIT_SIP_URL: str = "sip:callcenter@localhost:7881"
