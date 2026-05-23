@@ -1,4 +1,6 @@
 .env
+.git
+.gitignore
 __pycache__/
 *.pyc
 *.egg-info/
@@ -14,3 +16,7 @@ Thumbs.db
 *.swp
 *.swo
 *~
+README.md
+docs/
+tests/
+scripts/

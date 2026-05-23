@@ -10,7 +10,7 @@ import requests
 # ─── Configuration ───
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "YOUR_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "YOUR_AUTH_TOKEN")
-TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "+1XXXXXXXXXX")
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "+1-555-555-5555")
 TWILIO_WEBHOOK_URL = os.getenv("TWILIO_WEBHOOK_URL", "http://localhost:8000/webhooks/twilio")
 TWILIO_STATUS_URL = os.getenv("TWILIO_STATUS_URL", "http://localhost:8000/webhooks/status")
 TWILIO_API_BASE = "https://api.twilio.com/2010-04-01"
