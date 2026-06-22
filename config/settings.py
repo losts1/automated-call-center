@@ -9,8 +9,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # -- LiveKit --
     LIVEKIT_URL: str = "http://localhost:7880"
-    LIVEKIT_API_KEY: str = "devkey"
-    LIVEKIT_API_SECRET: str = "secretkey"
+    LIVEKIT_API_KEY: str = ""
+    LIVEKIT_API_SECRET: str = ""
 
     # -- ElevenLabs --
     ELEVENLABS_API_KEY: str = ""
@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     # -- Server --
     AGENT_PORT: int = 8000
-    WEBHOOK_SECRET: str = "webhook-secret"
+    WEBHOOK_SECRET: str = ""
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

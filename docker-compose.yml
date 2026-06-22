@@ -6,11 +6,12 @@ services:
       - "7881:7881/udp"
     environment:
       - REDIS_HOST=livekit-redis
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY:-devkey}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET:-secretkey}
     command: >
       --bind 0.0.0.0
       --port 7880
       --udp-port 7881
-      --keys devkey: secretkey
       --redis-host livekit-redis:6379
       --dev
     depends_on:

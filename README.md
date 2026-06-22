@@ -10,13 +10,13 @@ AI-powered legal call center with ElevenLabs voice, local lawllm via Ollama, and
 | Redis | 6379 (TCP) | Running |
 | Ollama | 11434 (TCP) | Running (lawllm loaded) |
 | ElevenLabs | — | Configured (API key set) |
-| Twilio | — | Account active (+18333841868) |
+| Twilio | — | Configured |
 
 ## Quick Start
 
 ```bash
 # Start services
-cd /home/lost/automated-call-center
+cd automated-call-center
 sudo docker-compose up -d
 
 # Verify services
@@ -28,7 +28,7 @@ python3 agent/aws_mock.py        # Run tests
 ## Twilio SIP Setup
 
 ### Current State
-- ✅ Phone number +18333841868 configured in account
+- ✅ Phone number configured in Twilio account
 - ⏳ Webhook endpoint needs public URL
 - ⏳ Phone number needs webhook URL update
 
