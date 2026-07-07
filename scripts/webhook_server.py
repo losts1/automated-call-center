@@ -4,12 +4,16 @@ Handles room events and updates call state via moto/local AWS mock.
 """
 
 import asyncio
+import base64
+import hashlib
+import hmac
 import json
 from datetime import datetime
 from typing import Optional
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
+from livekit.api import TokenVerifier
 from rich.console import Console
 
 from config.settings import settings
@@ -19,11 +23,53 @@ app = FastAPI(title="Call Center Webhooks")
 console = Console()
 state = StateManager()
 
+# LiveKit signs each webhook with a JWT (HS256, iss=API key) in the
+# Authorization header, carrying a base64 sha256 hash of the request body.
+# Verify the JWT via the official SDK; check the body hash ourselves so we
+# stay decoupled from LiveKit's event proto schema.
+_token_verifier = (
+    TokenVerifier(settings.LIVEKIT_API_KEY, settings.LIVEKIT_API_SECRET)
+    if settings.LIVEKIT_API_KEY and settings.LIVEKIT_API_SECRET
+    else None
+)
+if _token_verifier is None:
+    console.print(
+        "[yellow]⚠ LIVEKIT_API_KEY/SECRET not set — webhook signature "
+        "verification is DISABLED[/yellow]"
+    )
+
+
+def verify_livekit_signature(raw_body: bytes, auth_token: str) -> bool:
+    """Verify a LiveKit webhook's Authorization JWT and body hash.
+
+    Returns True when verification is disabled (no credentials configured).
+    """
+    if _token_verifier is None:
+        return True
+    if not auth_token:
+        return False
+    try:
+        claims = _token_verifier.verify(auth_token)
+    except Exception:
+        return False
+    if not claims.sha256:
+        return False
+    return hmac.compare_digest(
+        hashlib.sha256(raw_body).digest(),
+        base64.b64decode(claims.sha256),
+    )
+
 
 @app.post("/webhooks/livekit")
 async def livekit_webhook(request: Request):
     """Handle LiveKit room events."""
-    data = await request.json()
+    raw_body = await request.body()
+    auth_token = request.headers.get("Authorization", "")
+    if not verify_livekit_signature(raw_body, auth_token):
+        console.print("[red]⛔ Rejected LiveKit webhook: invalid signature[/red]")
+        raise HTTPException(status_code=401, detail="Invalid webhook signature")
+
+    data = json.loads(raw_body)
     event_type = data.get("event", "unknown")
     room = data.get("room", {})
     participant = data.get("participant", {})
