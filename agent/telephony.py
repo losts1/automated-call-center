@@ -297,9 +297,9 @@ async def run_agent():
 
     agent = TelephonyAgent()
 
-    # Check LLM connectivity
+    # Check LLM connectivity (LLMClient methods are synchronous)
     try:
-        result = await agent.llm.chat(
+        result = agent.llm.chat(
             [{"role": "user", "content": "Hello"}], temperature=0.1
         )
         console.print(

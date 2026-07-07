@@ -3,6 +3,7 @@
 Routes inbound calls to LiveKit SIP and handles call status updates.
 """
 
+import base64
 import hmac
 import hashlib
 import logging
@@ -63,11 +64,15 @@ def verify_twilio_signature(
     params_str = "".join(
         f"{k}{v}" for k, v in sorted(params.items())
     )
-    digest = hmac.new(
-        auth_token.encode(),
-        (request_url + params_str).encode(),
-        hashlib.sha1,
-    ).hexdigest()
+    # Twilio signs with HMAC-SHA1 and base64-encodes the digest (NOT hex).
+    # See: https://www.twilio.com/docs/usage/webhooks/webhooks-security
+    digest = base64.b64encode(
+        hmac.new(
+            auth_token.encode(),
+            (request_url + params_str).encode("utf-8"),
+            hashlib.sha1,
+        ).digest()
+    ).decode()
     return hmac.compare_digest(digest, twilio_signature)
 
 
@@ -100,9 +105,9 @@ async def health_check():
 @app.post("/webhooks/twilio")
 async def twilio_webhook(
     request: Request,
-    call_sid: str = Form(None),
-    from_: str = Form(None),
-    to: str = Form(None),
+    call_sid: str = Form(None, alias="CallSid"),
+    from_: str = Form(None, alias="From"),
+    to: str = Form(None, alias="To"),
 ):
     """Handle inbound calls - route to LiveKit SIP."""
     # Verify Twilio signature if auth token is configured

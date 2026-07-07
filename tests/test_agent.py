@@ -5,7 +5,6 @@ Tests the full flow: LLM connectivity, state management, recording.
 
 import asyncio
 import pytest
-import httpx
 from datetime import datetime
 
 from agent.llm_client import QwenLegalClient
@@ -21,13 +20,14 @@ class TestLLMClient:
         """Test that Qwen3.6 is reachable."""
         client = QwenLegalClient()
         try:
-            result = await client.chat(
+            result = client.chat(
                 [{"role": "user", "content": "Say hello"}],
                 temperature=0.1,
             )
-            assert "choices" in result
-            assert len(result["choices"]) > 0
-            print(f"✅ LLM response: {result['choices'][0]['message']['content'][:50]}...")
+            # Ollama returns {"message": {"content": ...}}, not OpenAI "choices"
+            content = client._extract_text(result)
+            assert content
+            print(f"✅ LLM response: {content[:50]}...")
         except Exception as e:
             pytest.skip(f"LLM not available: {e}")
 
@@ -36,7 +36,7 @@ class TestLLMClient:
         """Test intent classification."""
         client = QwenLegalClient()
         try:
-            intent = await client.classify_intent(
+            intent = client.classify_intent(
                 "I need to schedule a consultation about my divorce case."
             )
             assert "intent" in intent
@@ -54,7 +54,7 @@ class TestLLMClient:
         """Test sentiment detection."""
         client = QwenLegalClient()
         try:
-            sentiment = await client.detect_sentiment(
+            sentiment = client.detect_sentiment(
                 "I've been waiting three weeks for a response and I'm very frustrated."
             )
             assert "sentiment" in sentiment
@@ -75,7 +75,7 @@ class TestLLMClient:
                 {"role": "user", "content": "I want to file a claim."},
                 {"role": "assistant", "content": "I can help with that. What type of claim?"},
             ]
-            response = await client.generate_response(context, "Personal injury from a car accident")
+            response = client.generate_response(context, "Personal injury from a car accident")
             assert len(response) > 10
             assert "consultation" in response.lower() or "attorney" in response.lower() or "schedule" in response.lower()
             print(f"✅ Response: {response[:80]}...")
@@ -111,7 +111,7 @@ class TestStateManagement:
             result = StateManager.update_call_state(
                 record["call_id"],
                 "completed",
-                {"disposition": "resolved"},
+                disposition="resolved",
             )
             assert result is True
             print("✅ Call state updated")
@@ -131,7 +131,7 @@ class TestRecording:
             url = RecordingManager.upload_recording(
                 call_id="test-recording",
                 audio_data=wav_header,
-                format="wav",
+                fmt="wav",
             )
             assert url is not None
             print(f"✅ Recording uploaded: {url}")

@@ -54,10 +54,8 @@ async def livekit_webhook(request: Request):
 async def handle_room_started(call_id: str, room: dict, participant: dict):
     """Room started - initialize call tracking."""
     console.print(f"  [green]▶ Room started[/green]")
-    state.update_call_state(call_id, "active", {
-        "room_name": room.get("name"),
-        "participant": participant.get("identity"),
-    })
+    # update_call_state's 3rd arg is a disposition string, not a metadata dict.
+    state.update_call_state(call_id, "active")
 
 
 async def handle_participant_connected(call_id: str, room: dict, participant: dict):

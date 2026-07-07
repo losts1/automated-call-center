@@ -88,7 +88,7 @@ class StateManager:
             TableName=TABLE_NAME,
             Key={"call_id": {"S": call_id}},
             UpdateExpression="SET transcript = list_append(if_not_exists(transcript, :empty), :entry)",
-            ExpressionAttributeValues={":empty": {"L": []}, ":entry": [item]},
+            ExpressionAttributeValues={":empty": {"L": []}, ":entry": {"L": [item]}},
         )
 
     @classmethod
@@ -120,14 +120,13 @@ class StateManager:
         )
 
         if summary:
-            ddb.put_item(
+            # Update (not put_item) so we don't overwrite the existing record and
+            # lose room_name / transcript / created_at, etc.
+            ddb.update_item(
                 TableName=TABLE_NAME,
-                Item={
-                    "call_id": {"S": call_id},
-                    "summary": {"S": summary.get("summary", "")},
-                    "disposition": {"S": disposition},
-                    "completed_at": {"S": now},
-                },
+                Key={"call_id": {"S": call_id}},
+                UpdateExpression="SET summary = :sum",
+                ExpressionAttributeValues={":sum": {"S": summary.get("summary", "")}},
             )
         return True
 
